@@ -64,7 +64,7 @@ class CMakeBuild(build_ext):
 
 
 setup(
-    ext_modules=[CMakeExtension('dqrobotics.interfaces.coppeliasim._interface_coppeliasim_zmq')],
+    ext_modules=[CMakeExtension('dqrobotics.interfaces.coppeliasim._core')],
     cmdclass=dict(build_ext=CMakeBuild),
     zip_safe=False,
     packages=['dqrobotics.interfaces.coppeliasim'],

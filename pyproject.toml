@@ -18,9 +18,9 @@ maintainers = [
 ]
 dynamic = ["version", "classifiers"]
 dependencies=[
-    'numpy',
+    'dqrobotics',
 ]
-description='dqrobotics Python'
+description='dqrobotics Python interface for CoppeliaSim ZMQ'
 readme = "README.md"
 requires-python = ">= 3.9"
 
