@@ -23,4 +23,4 @@
 #
 # ################################################################
 """
-from dqrobotics.interfaces.coppeliasim._interface_coppeliasim_zmq import *
+from dqrobotics.interfaces.coppeliasim._core import *
