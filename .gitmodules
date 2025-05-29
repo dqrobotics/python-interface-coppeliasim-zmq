@@ -1,3 +1,9 @@
 [submodule "submodules/dqrobotics/python"]
 	path = submodules/dqrobotics/python
 	url = https://github.com/dqrobotics/python.git
+[submodule "submodules/dqrobotics/cpp-interface-coppeliasim"]
+	path = submodules/dqrobotics/cpp-interface-coppeliasim
+	url = https://github.com/dqrobotics/cpp-interface-coppeliasim.git
+[submodule "submodules/dqrobotics/cpp-interface-coppeliasim-zmq"]
+	path = submodules/dqrobotics/cpp-interface-coppeliasim-zmq
+	url = https://github.com/dqrobotics/cpp-interface-coppeliasim-zmq.git
