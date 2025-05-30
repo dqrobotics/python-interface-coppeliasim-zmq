@@ -6,9 +6,8 @@ endif()
 
 project(dqrobotics_python_interface_coppeliasim_zmq)
 
-if(APPLE)
-    find_package(cppzmq)
-endif()
+find_package(Eigen3 REQUIRED)
+find_package(cppzmq)
 
 add_subdirectory(submodules/dqrobotics/python/pybind11)
 
@@ -29,9 +28,19 @@ target_include_directories(_core PUBLIC
 )
 
 if(APPLE)
-    target_link_libraries(_core PRIVATE dqrobotics dqrobotics-interface-coppeliasim-zmq cppzmq)
+    target_link_libraries(_core PRIVATE 
+    dqrobotics 
+    dqrobotics-interface-coppeliasim-zmq
+    cppzmq
+    Eigen3::Eigen
+    )
 endif()
 
 if(UNIX AND NOT APPLE)
-    target_link_libraries(_core PRIVATE dqrobotics dqrobotics-interface-coppeliasim-zmq zmq)
+    target_link_libraries(_core PRIVATE 
+    dqrobotics 
+    dqrobotics-interface-coppeliasim-zmq 
+    zmq
+    Eigen3::Eigen
+    )
 endif()
