@@ -1,20 +1,19 @@
 name: Python Package
 
 on: [push,workflow_dispatch]
-    
+
 jobs:
   build:
 
     permissions:
-       id-token: write
+      id-token: write
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
     strategy:
       fail-fast: false
       matrix:
-        python-version: [3.9, '3.10', '3.11', '3.12', '3.13']
-        # os: ['ubuntu-22.04', 'macos-latest', 'windows-latest', 'linux-arm64']
-        os: ['ubuntu-22.04', 'macos-latest', 'linux-arm64']
+        python-version: ['3.10', '3.11', '3.12', '3.13']
+        os: ['ubuntu-22.04-arm', 'ubuntu-22.04', 'macos-latest']
         experimental: [false]
         # exclude:
         # excludes python-versions not available in specific OSs. Usually needed when new versions are released.
@@ -22,94 +21,81 @@ jobs:
         #   python-version: '3.13'
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Customize git
-      run: |
-        git submodule update --init --recursive
-        git fetch --prune --unshallow
-    - name: Set up Python ${{ matrix.python-version }} (Github Hosted VMs)
-      if: matrix.os != 'linux-arm64'
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Set up Python ${{ matrix.python-version }} (Self Hosted Vms)
-      if: matrix.os == 'linux-arm64'
-      run: |
-        python${{ matrix.python-version }} -m venv venv${{ matrix.python-version }}
-        echo "${{github.workspace}}/venv${{matrix.python-version}}/bin/" >> $GITHUB_PATH
-        sed -i'' -e 's/-j2/-j8/g' setup.py
-    - name: Install compilation dependencies [Ubuntu/C++]
-      if: matrix.os == 'ubuntu-22.04'
-      run: |
-        sudo apt install libeigen3-dev libzmq3-dev libboost-all-dev
-    - name: Install compilation dependencies [MacOS/C++]
-      if: matrix.os == 'macos-latest'
-      run: |
-        brew install eigen cppzmq boost
-    - name: Install compilation dependencies [Windows/C++]
-      if: matrix.os == 'windows-latest'
-      run: |
-        pwd
-        echo "Setting up vcpkg..."
-        cd C:\vcpkg
-        .\bootstrap-vcpkg.bat
-        vcpkg integrate install
-        echo "Installing dependencies..."
-        .\vcpkg install eigen3:x64-windows cppzmq boost
-        echo "Adding symlink to vcpkg..."
-        cmd /c mklink /d c:\Tools\vcpkg c:\vcpkg
-        cd ~
-    - name: Install compilation dependencies [Python]
-      run: |
-        python -m pip install --upgrade pip
-        pip install setuptools wheel setuptools-git-versioning
-    - name: Compile
-      run: |
-        python setup.py bdist_wheel
-    - name: Remove build folder for (not Windows)
-      if: matrix.os != 'windows-latest'
-      run: |
-        rm -rf build
-    - name: Remove build folder (Windows only)
-      if: matrix.os == 'windows-latest'
-      run: |
-        rm -r -fo build
-    - name: Rename wheel (MacOS only)
-      if: matrix.os == 'macos-latest'
-      run: |
-        brew install rename
-        cd dist
-        sw_vers
-        rename 's/11_0/10_14/' *
-        rename 's/12_0/10_15/' *
-        rename 's/universal2/arm64/' *
-        cd ..
-    - name: Install (not Windows)
-      if: matrix.os != 'windows-latest'
-      run: |
-        python -m pip install dist/*.whl
-    - name: Install (Windows)
-      if: matrix.os == 'windows-latest'
-      run: |
-        python -m pip install @(join-path "dist" (get-childitem -path dist -name *.whl))
-    - name: Rename wheel (Ubuntu Only)
-      if: matrix.os == 'ubuntu-22.04'
-      run: |
-        sudo apt install rename
-        cd dist
-        rename 's/linux/manylinux1/' *
-        cd ..
-    - name: Rename wheel (Self Hosted [linux-arm64] Only)
-      if: matrix.os == 'linux-arm64'
-      run: |
-        cd dist
-        rename 's/linux/manylinux2014/' *
-        cd ..
-    - name: Publish to PyPi
-      env:
-        TWINE_USERNAME: '__token__'
-        TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
-      if: github.ref == 'refs/heads/master'
-      run: |
-        python -m pip install twine
-        twine upload dist/*
+      - uses: actions/checkout@v2
+      - name: Customize git
+        run: |
+          git submodule update --init --recursive
+          git fetch --prune --unshallow
+      - name: Set up Python ${{ matrix.python-version }} (Github Hosted VMs)
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install compilation dependencies [Ubuntu/C++]
+        if: startsWith (matrix.os, 'ubuntu-22.04')
+        run: |
+          sudo apt-get install libeigen3-dev libzmq3-dev libboost-all-dev
+      - name: Install compilation dependencies [MacOS/C++]
+        if: matrix.os == 'macos-latest'
+        run: |
+          brew install eigen
+      - name: Install compilation dependencies [Windows/C++]
+        if: matrix.os == 'windows-latest'
+        run: |
+          pwd
+          echo "Setting up vcpkg..."
+          cd C:\vcpkg
+          .\bootstrap-vcpkg.bat
+          vcpkg integrate install
+          echo "Installing dependencies..."
+          .\vcpkg install eigen3:x64-windows cppzmq boost
+          echo "Adding symlink to vcpkg..."
+          cmd /c mklink /d c:\Tools\vcpkg c:\vcpkg
+          cd ~
+      - name: Install compilation dependencies [Python]
+        run: |
+          python -m pip install --upgrade pip
+          pip install setuptools wheel setuptools-git-versioning
+      - name: Compile
+        run: |
+          python setup.py bdist_wheel
+      - name: Remove build folder for (not Windows)
+        if: matrix.os != 'windows-latest'
+        run: |
+          rm -rf build
+      - name: Remove build folder (Windows only)
+        if: matrix.os == 'windows-latest'
+        run: |
+          rm -r -fo build
+      - name: Rename wheel (MacOS only)
+        if: matrix.os == 'macos-latest'
+        run: |
+          brew install rename
+          cd dist
+          sw_vers
+          rename 's/11_0/10_14/' *
+          rename 's/12_0/10_15/' *
+          rename 's/universal2/arm64/' *
+          cd ..
+      - name: Install (not Windows)
+        if: matrix.os != 'windows-latest'
+        run: |
+          python -m pip install dist/*.whl
+      - name: Install (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          python -m pip install @(join-path "dist" (get-childitem -path dist -name *.whl))
+      - name: Rename wheel (Ubuntu Only)
+        if: startsWith (matrix.os, 'ubuntu-22.04')
+        run: |
+          sudo apt-get install rename
+          cd dist
+          rename 's/linux/manylinux2014/' *
+          cd ..
+      - name: Publish to PyPi
+        env:
+          TWINE_USERNAME: '__token__'
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+        if: github.ref == 'refs/heads/master'
+        run: |
+          python -m pip install twine
+          twine upload dist/*
