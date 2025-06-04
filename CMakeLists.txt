@@ -7,7 +7,7 @@ endif()
 project(dqrobotics_python_interface_coppeliasim_zmq)
 
 find_package(Eigen3 REQUIRED)
-if (UNIX AND NOT APPLE)
+if (APPLE)
     find_package(cppzmq REQUIRED)
 endif()
 
