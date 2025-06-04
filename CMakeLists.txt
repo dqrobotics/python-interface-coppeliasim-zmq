@@ -7,7 +7,11 @@ endif()
 project(dqrobotics_python_interface_coppeliasim_zmq)
 
 find_package(Eigen3 REQUIRED)
-find_package(cppzmq REQUIRED)
+if(UNIX AND NOT APPLE)
+    find_package(ZeroMQ REQUIRED)
+else ()
+    find_package(cppzmq REQUIRED)
+endif ()
 
 add_subdirectory(submodules/dqrobotics/python/pybind11)
 
