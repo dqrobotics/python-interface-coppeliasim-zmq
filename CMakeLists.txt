@@ -43,8 +43,8 @@ endif()
 if(UNIX AND NOT APPLE)
     target_link_libraries(_core PRIVATE 
     dqrobotics 
-    dqrobotics-interface-coppeliasim-zmq 
-    zmq
+    dqrobotics-interface-coppeliasim-zmq
+    ZeroMQ
     Eigen3::Eigen
     )
 endif()
