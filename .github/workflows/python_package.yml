@@ -59,6 +59,11 @@ jobs:
       - name: Compile
         run: |
           python setup.py bdist_wheel
+      - name: Testing
+        run: |
+          cd .github/scripts/
+          chmod +x basic_eval.sh
+          ./basic_eval.sh
       - name: Remove build folder for (not Windows)
         if: matrix.os != 'windows-latest'
         run: |
